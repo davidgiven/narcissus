@@ -12,6 +12,9 @@ static Display* display;
 static Window window;
 static int device;
 
+static uint32_t pressed = 0;
+static Time presstime = 0;
+
 static void find_device(void)
 {
 	int num;
@@ -56,14 +59,62 @@ static void grab_device(void)
 	assert(s == 0);
 }
 
+static int decode_key(int keycode)
+{
+	switch (keycode)
+	{
+		case  23: return 1;
+		case  24: return 2;
+		case  25: return 3;
+		case  26: return 4;
+		case  27: return 5;
+
+		case  66: return 6;
+		case  38: return 7;
+		case  39: return 8;
+		case  40: return 9;
+		case  41: return 10;
+
+		case  50: return 11;
+		case  52: return 12;
+		case  53: return 13;
+		case  54: return 14;
+
+		case  65: return 15;
+		case  64: return 0;
+		case 111: return 16;
+		case 114: return 17;
+		case 116: return 18;
+		case 113: return 19;
+	}
+
+	return -1;
+}
+
 static void change_state(int keycode, Time time, bool state)
 {
-	printf("%d %ld %d\n", keycode, time, state);
+	int key = decode_key(keycode);
+	if (key == -1)
+		return;
+
+	uint32_t mask = 1U << key;
+	uint32_t old = pressed;
+	if (state)
+		pressed |= mask;
+	else
+		pressed &= ~mask;
+	
+	if (pressed && !old)
+	{
+		printf("new chord!\n");
+		presstime = time;
+	}
+
+	printf("%08X %d\n", pressed, time - presstime);
 }
 
 int main(int argc, const char* argv[])
 {
-
 	display = XOpenDisplay(NULL);
 
 	int opcode;
