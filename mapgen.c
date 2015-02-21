@@ -2,6 +2,24 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#define HEX__(n) 0x##n##LU
+#define B8__(x) ((x&0x0000000FLU)?1:0) \
+	+((x&0x000000F0LU)?2:0) \
+	+((x&0x00000F00LU)?4:0) \
+	+((x&0x0000F000LU)?8:0) \
+	+((x&0x000F0000LU)?16:0) \
+	+((x&0x00F00000LU)?32:0) \
+	+((x&0x0F000000LU)?64:0) \
+	+((x&0xF0000000LU)?128:0)
+
+#define B8(d) ((unsigned char)B8__(HEX__(d)))
+#define B16(dmsb,dlsb) (((unsigned short)B8(dmsb)<<8) + B8(dlsb))
+#define B32(dmsb,db2,db3,dlsb) \
+	(((unsigned long)B8(dmsb)<<24) \
+	+ ((unsigned long)B8(db2)<<16) \
+	+ ((unsigned long)B8(db3)<<8) \
+	+ B8(dlsb))
+
 struct chord
 {
 	uint32_t keys;
@@ -57,6 +75,17 @@ static int calculate_cost(uint32_t chord)
 	if ((chord & 0x003e) && (chord & 0x07c0))
 		cost++;
 
+	/* Penalise some awkward three-letter chords. */
+
+	switch (chord)
+	{
+		case B8(00110010):
+		case B8(00100110):
+		case B8(00101010):
+			cost += 3;
+			break;
+	}
+
 	return cost;
 }
 
@@ -67,18 +96,36 @@ static void addchord(uint32_t chord)
 	numchords++;
 }
 
+static const char* tobinary(uint32_t chord)
+{
+	static char buffer[12];
+
+	for (int i=1; i<=5; i++)
+		buffer[i-1] = (chord & (1<<i)) ? '1' : '0';
+	buffer[5] = ',';
+	for (int i=6; i<=10; i++)
+		buffer[i] = (chord & (1<<i)) ? '1' : '0';
+	buffer[11] = '\0';
+
+	return buffer;
+}
+
 int main(int argc, const char* argv[])
 {
-	for (uint32_t i = 1; i<(1<<10); i++)
+	for (uint32_t i = 1; i<(1<<5); i++)
 	{
 		if (__builtin_popcount(i) <= 3)
 			addchord(i << 1);
 	}
+	addchord(B8(00011110));
+	addchord(B8(00111100));
 	
 	qsort(chords, numchords, sizeof(*chords), chord_compare_cb);
 
 	for (int i=0; i<numchords; i++)
-		printf("/* %d cost=%d */ %08x,\n", i, chords[i].cost, chords[i].keys);
+		printf("[CHORD(%s)] = %d, /* cost=%d */\n",
+			tobinary(chords[i].keys), i,
+			chords[i].cost);
 
 	printf("Total number of chords: %d\n", numchords);
 }
