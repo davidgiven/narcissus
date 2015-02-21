@@ -3,6 +3,7 @@ CFLAGS = \
 	-std=c99 \
 
 LIBS = \
+	-lfakekey \
 	-lX11 \
 	-lXi
 

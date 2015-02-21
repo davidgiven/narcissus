@@ -7,6 +7,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/extensions/XInput2.h>
+#include <fakekey/fakekey.h>
 
 #define HEX__(n) 0x##n##LU
 
@@ -20,8 +21,10 @@
 static Display* display;
 static Window window;
 static int device;
+static FakeKey* fakekey;
 
 static uint32_t pressed = 0;
+static bool previous = false;
 static Time presstime = 0;
 
 #define LETTER(lo, caps) \
@@ -161,18 +164,38 @@ static void change_state(int keycode, Time time, bool state)
 		pressed &= ~mask;
 	
 	if (pressed && !old)
-	{
-		printf("new chord!\n");
 		presstime = time;
-	}
 
 	int decoded = 0;
 	if (pressed < (1<<11))
 		decoded = chorddecodetable[pressed];
-	if (!decoded)
-		decoded = '?';
+	else
+	{
+		switch (pressed)
+		{
+			case (1<<15): decoded = 13; break;
+		}
+	}
 
-	printf("%08X %d '%c'\n", pressed, time - presstime, decoded);
+	if (state)
+	{
+		if (decoded)
+		{
+			if (previous)
+			{
+				fakekey_release(fakekey);
+				fakekey_press_keysym(fakekey, 127, 0);
+				fakekey_release(fakekey);
+			}
+			fakekey_press_keysym(fakekey, decoded, 0);
+			previous = true;
+		}
+	}
+	else
+	{
+		fakekey_release(fakekey);
+		previous = false;
+	}
 }
 
 int main(int argc, const char* argv[])
@@ -189,6 +212,7 @@ int main(int argc, const char* argv[])
 	}
 
 	window = XDefaultRootWindow(display);
+	fakekey = fakekey_init(display);
 	find_device();
 	grab_device();
 
@@ -220,7 +244,7 @@ int main(int argc, const char* argv[])
 			}
 
 			default:
-				printf("event %d\n", event.type);
+				break;
 		}
 	}
 	return 0;
