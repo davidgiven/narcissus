@@ -8,12 +8,68 @@
 #include <X11/Xatom.h>
 #include <X11/extensions/XInput2.h>
 
+#define HEX__(n) 0x##n##LU
+
+#define CHORD5__(x) \
+	(  ((x&0xf0000LU) ? (1<<0) : 0) \
+	 | ((x&0x0f000LU) ? (1<<1) : 0) \
+	 | ((x&0x00f00LU) ? (1<<2) : 0) \
+	 | ((x&0x000f0LU) ? (1<<3) : 0) \
+	 | ((x&0x0000fLU) ? (1<<4) : 0))
+
 static Display* display;
 static Window window;
 static int device;
 
 static uint32_t pressed = 0;
 static Time presstime = 0;
+
+#define LETTER(lo, caps) \
+	[CHORD5__(HEX__(lo)) << 1] = caps | 32, \
+	[CHORD5__(HEX__(lo)) << 6] = caps
+	
+#define NUMBER(num) \
+	[(1<<num) | 1] = '0' + num
+
+static uint8_t chorddecodetable[1<<11] = {
+	LETTER(00100, 'E'),
+	LETTER(00010, 'I'),
+	LETTER(00001, 'S'),
+	LETTER(10000, 'A'),
+	LETTER(01000, 'R'),
+	LETTER(00110, 'N'),
+	LETTER(00101, 'T'),
+	LETTER(00011, 'O'),
+	LETTER(10100, 'L'),
+	LETTER(01100, 'C'),
+	LETTER(10010, 'D'),
+	LETTER(01010, 'U'),
+	LETTER(10001, 'G'),
+	LETTER(01001, 'P'),
+	LETTER(00111, 'M'),
+	LETTER(11000, 'H'),
+	LETTER(10110, 'B'),
+	LETTER(01110, 'Y'),
+	LETTER(01101, 'F'),
+	LETTER(01011, 'V'),
+	LETTER(11100, 'K'),
+	LETTER(11010, 'W'),
+	LETTER(01111, 'Z'),
+	LETTER(11110, 'X'),
+	LETTER(10101, 'J'),
+	LETTER(10011, 'Q'),
+
+	NUMBER(1),
+	NUMBER(2),
+	NUMBER(3),
+	NUMBER(4),
+	NUMBER(5),
+	NUMBER(6),
+	NUMBER(7),
+	NUMBER(8),
+	NUMBER(9),
+	[(1<<10) | 1] = '0',
+};
 
 static void find_device(void)
 {
@@ -110,7 +166,13 @@ static void change_state(int keycode, Time time, bool state)
 		presstime = time;
 	}
 
-	printf("%08X %d\n", pressed, time - presstime);
+	int decoded = 0;
+	if (pressed < (1<<11))
+		decoded = chorddecodetable[pressed];
+	if (!decoded)
+		decoded = '?';
+
+	printf("%08X %d '%c'\n", pressed, time - presstime, decoded);
 }
 
 int main(int argc, const char* argv[])
