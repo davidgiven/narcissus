@@ -7,7 +7,7 @@ LIBS = \
 	-lX11 \
 	-lXi
 
-all: narcissus mapgen
+all: narcissus mapgen statanal
 
 %: %.c
 	gcc -o $@ $^ $(CFLAGS) $(LIBS)
