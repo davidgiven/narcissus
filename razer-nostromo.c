@@ -113,10 +113,10 @@ const struct device razer_nostromo = {
 		LETTER1(10101, 'Q'),
 		LETTER1(10011, 'Z'),
 
+		{ B12,    13 },
 		{ B13,    ' ' },
 		{ B13|B0, '\t' },
 		{ B14,    127 },
-		{ B15,    13 },
 
 		{ 0, 0 }
 	}
