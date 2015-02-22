@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <X11/Xlib.h>
+#include <X11/Xatom.h>
+#include <X11/extensions/XInput2.h>
 #include "devices.h"
 
 static int numbuttons;
@@ -35,7 +38,34 @@ static int button_comparator_cb(const void* o1, const void* o2)
 	return 0;
 }
 
-const struct device* find_device(const char* name)
+const struct device* find_connected_device(Display* display, int* deviceid)
+{
+	int num;
+	XIDeviceInfo* devices = XIQueryDevice(display, XIAllDevices, &num);
+	for (int i=0; i<num; i++)
+	{
+		XIDeviceInfo* info = &devices[i];
+
+		bool is_keyboard = false;
+		for (int j=0; j<info->num_classes; j++)
+			is_keyboard = is_keyboard || (info->classes[j]->type == XIKeyClass);
+
+		if (is_keyboard)
+		{
+			const struct device* device = find_device_by_name(info->name);
+			if (device)
+			{
+				if (deviceid)
+					*deviceid = info->deviceid;
+				return device;
+			}
+		}
+	}
+
+	return NULL;
+}
+
+const struct device* find_device_by_name(const char* name)
 {
 	if (strcmp(razer_nostromo.name, name) == 0)
 		return &razer_nostromo;

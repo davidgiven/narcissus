@@ -19,33 +19,6 @@ static uint32_t pressed = 0;
 static bool previous = false;
 static Time presstime = 0;
 
-static void find_xinput_device(void)
-{
-	int num;
-	XIDeviceInfo* devices = XIQueryDevice(display, XIAllDevices, &num);
-	for (int i=0; i<num; i++)
-	{
-		XIDeviceInfo* info = &devices[i];
-
-		bool is_keyboard = false;
-		for (int j=0; j<info->num_classes; j++)
-			is_keyboard = is_keyboard || (info->classes[j]->type == XIKeyClass);
-
-		if (is_keyboard)
-		{
-			const struct device* device = find_device(info->name);
-			if (device)
-			{
-				deviceid = info->deviceid;
-				load_device(device);
-				return;
-			}
-		}
-	}
-
-	assert(false);
-}
-
 static void grab_xinput_device(void)
 {
 	XIEventMask eventmask;
@@ -119,7 +92,11 @@ int main(int argc, const char* argv[])
 
 	window = XDefaultRootWindow(display);
 	fakekey = fakekey_init(display);
-	find_xinput_device();
+
+	const struct device* device = find_connected_device(display, &deviceid);
+	assert(device);
+	load_device(device);
+
 	grab_xinput_device();
 
 	for(;;)
