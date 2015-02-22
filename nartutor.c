@@ -141,12 +141,14 @@ static void open_dictionary(void)
 			struct word* w = calloc(1, sizeof(struct word));
 			w->word = strdup(buffer);
 			w->next = allwords;
+			allwords = w;
 			count++;
 		}
 	}
 
 	fclose(fp);
 
+	wordlist = calloc(count+1, sizeof(*wordlist));
 	printf("(%d words in word list)\n", count);
 }
 
@@ -168,6 +170,116 @@ static void calculate_levels(void)
 	printf("(learning order: %26s)\n", levels);
 }
 
+static bool isvalid(char c)
+{
+	for (int i=0; i<level; i++)
+		if (c == levels[i])
+			return true;
+	return false;
+}
+
+static bool isvalidword(const char* s)
+{
+	while (*s)
+	{
+		if (!isvalid(*s))
+			return false;
+		s++;
+	}
+	return true;
+}
+
+static uint32_t djb2(const char* s)
+{
+    uint32_t hash = 5381;
+    int c;
+
+    while (c = *s++)
+        hash = ((hash << 5) + hash) + (uint8_t)c; /* hash * 33 + c */
+
+    return hash;
+}
+
+static int random_comparator_cb(const void* o1, const void* o2)
+{
+	uint32_t h1 = djb2(o1);
+	uint32_t h2 = djb2(o2);
+
+	if (h1 < h2)
+		return -1;
+	else if (h1 > h2)
+		return 1;
+	return 0;
+}
+
+static bool calculate_wordlist(void)
+{
+	struct word* w = allwords;
+	int count = 0;
+
+	while (w)
+	{
+		if (isvalidword(w->word))
+		{
+			wordlist[count] = w->word;
+			count++;
+		}
+		w = w->next;
+	}
+
+	printf("(%d words at level %d)\n", count, level);
+	if (count == 0)
+		return false;
+
+	qsort(wordlist, count, sizeof(*wordlist), random_comparator_cb);
+	wordlist[count] = NULL;
+
+	return true;
+}
+
+static bool askuser(const char* s)
+{
+	printf("Type %s: ", s);
+	fflush(stdout);
+
+	char c;
+	for (int i=0; i<strlen(s); i++)
+	{
+		c = getchar();
+		if (c != s[i])
+			goto failed;
+	}
+	c = getchar();
+	if (c != '\n')
+		goto failed;
+	return true;
+
+failed:
+	while (c != '\n')
+		c = getchar();
+	return false;
+}
+
+static void show_chords(void)
+{
+	printf("\nChords for level %d:\n", level);
+	const struct chord* chord = device->chords;
+	while (chord->buttons)
+	{
+		if (isvalid(chord->keysym))
+		{
+			printf("%c: ", chord->keysym);
+			for (int i=0; i<32; i++)
+			{
+				if (chord->buttons & (1<<i))
+					printf("%d ", i);
+			}
+			printf("\n");
+		}
+		chord++;
+	}
+}
+
 int main(int argc, char* argv[])
 {
 	parse_options(argc, argv);
@@ -175,5 +287,36 @@ int main(int argc, char* argv[])
 	find_device();
 	open_dictionary();
 	calculate_levels();
+
+	for (;;)
+	{
+		if (!calculate_wordlist())
+		{
+			if (level == 26)
+				error("couldn't find any words for level 26; giving up");
+
+			fprintf(stderr, "(skipping level %d because the wordlist is empty!)\n",
+				level);
+			level++;
+			continue;
+		}
+
+		show_chords();
+
+		const char** s = wordlist;
+		while (*s)
+		{
+			if (!askuser(*s))
+			{
+				printf("\nIncorrect!\n");
+				continue;
+			}
+
+			s++;
+		}
+
+		level++;
+		printf("\n(word list complete, advancing to level %d)\n", level);
+	}
 }
 
