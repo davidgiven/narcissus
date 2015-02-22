@@ -2,6 +2,7 @@ hide = @
 
 CFLAGS = \
 	-g \
+	-Os \
 	-std=c99 \
 	-D_BSD_SOURCE
 
@@ -22,7 +23,7 @@ nartutor: nartutor.o devices.o razer-nostromo.o
 
 clean:
 	@echo CLEAN
-	$(hide) rm narcissus mapgen statanal *.o
+	$(hide) rm narcissus mapgen statanal nartutor *.o
 
 %.o: %.c
 	@echo COMPILE $@
