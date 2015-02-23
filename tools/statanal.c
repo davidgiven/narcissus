@@ -4,6 +4,11 @@
  * see COPYING in the distribution root for the full text.
  */
 
+/* This is a really dumb frequency analyser. Pipe in a file, and it'll break
+ * it down in order of which characters are used most. It only understands
+ * ISO-Latin-1.
+ */
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>

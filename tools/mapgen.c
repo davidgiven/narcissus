@@ -4,6 +4,11 @@
  * see COPYING in the distribution root for the full text.
  */
 
+/* This is a really dumb tool which calculates chords in order of increasing
+ * cost, based on a set of cost heuristics I made up on a whim. It's probably
+ * adaptable to other devices; I don't know whether it's worth it.
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
