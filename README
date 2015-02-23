@@ -1,0 +1,86 @@
+                              NARCISSUS v0.0
+							  ==============
+
+                            © 2015 David Given
+                                2015-02-23
+                               (prerelease)
+
+INTRODUCTION
+============
+
+Narcissus is a simple tool which allows you to use a Razer Nostromo gaming
+keypad (or, potentially, other similar devices) as a chording keyboard,
+where different letters are produced by pressing combinations of keys.
+
+The Nostromo is one of these:
+
+http://www.razerzone.com/gaming-keyboards-keypads/razer-nostromo
+
+The keymap is moderately complicated by Narcissus also includes --- totally
+free! --- a simple tutorial tool which will teach you how to use it.
+
+
+INSTALLATION
+============
+
+In order to use Narcissus, you will need:
+
+ - Xlib
+ - libfakekey 
+   This is available practically everywhere --- I used the version in Debian.
+
+Narcissus is written in simple C99 and should be pretty portable.
+
+
+USAGE
+=====
+
+To use:
+
+  $ narcissus &
+
+It will automatically detect a connected device and start interpreting keys.
+
+To use the tutor:
+
+  $ nartutor [-l<level>] [-f<dictionary>]
+
+<dictionary> should be a wordlist; if you don't specify the -f option, then
+/usr/share/dict/words is used.
+
+<level> is the start level; i.e. the number of letters you know. If you don't
+specify the -l option, you start at 1.
+
+nartutor will show you the keymap for your device at the level you chose, and
+then prompt you with words to type in. When it runs out of words, it'll
+advance to the next level. If you get bored, ^C it and increase the level
+manually.
+
+
+ISSUES
+======
+
+It's not very configurable (read: not configurable), the keymap is subject to
+change without notice, and nartutor only knows about alphabetic keys.
+
+
+LICENSE
+=======
+
+Narcissus is available under the two-clause BSD license. Please see the
+COPYING file for the full text.
+
+
+REVISION HISTORY
+================
+
+Unreleased.
+
+
+THE AUTHOR
+==========
+
+Narcissus was written by me, David Given. You may contact me at dg@cowlark.com,
+or visit my website at http://www.cowlark.com. There may or may not be
+anything interesting there.
+
