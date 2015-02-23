@@ -99,6 +99,7 @@ int main(int argc, const char* argv[])
 
 	grab_xinput_device();
 
+	XSelectInput(display, window, GenericEvent);
 	for(;;)
 	{
 		XEvent event;
