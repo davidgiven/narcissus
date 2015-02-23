@@ -1,3 +1,9 @@
+/* Narcissus
+ * © 2015 David Given
+ * This file is redistributable under the terms of the two-clause BSD license;
+ * see COPYING in the distribution root for the full text.
+ */
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
