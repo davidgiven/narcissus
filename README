@@ -31,6 +31,13 @@ In order to use Narcissus, you will need:
 
 Narcissus is written in simple C99 and should be pretty portable.
 
+To build, just do:
+
+  $ make
+
+It'll leave the narcissus and nartutor binaries in the current directory; do
+with them what you will.
+
 
 USAGE
 =====
