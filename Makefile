@@ -12,40 +12,37 @@ LIBS = \
 	-lXi
 
 COMMON_OBJS = \
-	.obj/devices.o \
-	.obj/razer-nostromo.o
+	.obj/src/devices.o \
+	.obj/src/razer-nostromo.o
 
-all: narcissus mapgen statanal nartutor
+all: narcissus nartutor
 
-narcissus: .obj/narcissus.o $(COMMON_OBJS)
+narcissus: .obj/src/narcissus.o $(COMMON_OBJS)
 	@echo LINK $@
-	@mkdir -p .obj
+	@mkdir -p $(dir $@)
 	$(hide) gcc -o $@ $^ $(CFLAGS) $(LIBS)
 
-nartutor: nartutor.o $(COMMON_OBJS)
+nartutor: .obj/src/nartutor.o $(COMMON_OBJS)
 	@echo LINK $@
-	@mkdir -p .obj
+	@mkdir -p $(dir $@)
 	$(hide) gcc -o $@ $^ $(CFLAGS) $(LIBS)
 
 clean:
 	@echo CLEAN
-	$(hide) rm -f narcissus mapgen statanal nartutor .obj/*.o .obj/*.d
+	$(hide) rm -rf narcissus nartutor .obj
 
 .obj/%.o: %.c
 	@echo COMPILE $@
+	@mkdir -p $(dir $@)
 	$(hide) gcc -c -o $@ $< $(CFLAGS)
 
 .obj/%.d: %.c
 	@echo DEPEND $@
-	@mkdir -p .obj
+	@mkdir -p $(dir $@)
 	$(hide) gcc -MP -MM -MF $@ $< $(CFLAGS)
 
-%: %.c
-	@echo COMPILELINK $@
-	$(hide) gcc -o $@ $< $(CFLAGS) $(LIBS)
-
--include .obj/narcissus.d
--include .obj/devices.d
--include .obj/razer-nostromo.d
--include .obj/nartutor.d
+-include .obj/src/narcissus.d
+-include .obj/src/devices.d
+-include .obj/src/razer-nostromo.d
+-include .obj/src/nartutor.d
 
