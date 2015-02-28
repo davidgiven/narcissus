@@ -4,7 +4,8 @@ CFLAGS = \
 	-g \
 	-Os \
 	-std=c99 \
-	-D_BSD_SOURCE
+	-D_BSD_SOURCE \
+	-D_POSIX_SOURCE
 
 LIBS = \
 	-lfakekey \

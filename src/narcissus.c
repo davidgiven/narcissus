@@ -9,6 +9,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include <poll.h>
+#include <signal.h>
+#include <unistd.h>
+#include <sys/time.h>
 #include <assert.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
@@ -20,10 +24,27 @@ static Display* display;
 static Window window;
 static int deviceid;
 static FakeKey* fakekey;
+static int xi_opcode;
+static int pipefds[2];
 
 static uint32_t pressed = 0;
-static bool previous = false;
-static Time presstime = 0;
+static bool transmitpending = true;
+
+static void sigalrm_handler_cb(int signum)
+{
+	/* Write a single byte to the pipe to wake up the event loop. */
+	uint8_t c = 0;
+	write(pipefds[1], &c, 1);
+}
+
+static void settimer(int milliseconds)
+{
+	struct itimerval it = {
+		.it_interval = {0, 0},
+		.it_value = {0, milliseconds*1000}
+	};
+	setitimer(ITIMER_REAL, &it, NULL);
+}
 
 static void grab_xinput_device(void)
 {
@@ -46,67 +67,56 @@ static void grab_xinput_device(void)
 	assert(s == 0);
 }
 
+static void send_chord_key(void)
+{
+	if (transmitpending && pressed)
+	{
+		int decoded = decode_chord(pressed);
+		if (decoded)
+			fakekey_press_keysym(fakekey, decoded, 0);
+		transmitpending = false;
+	}
+}
+
 static void change_state(int keycode, Time time, bool state)
 {
 	uint32_t mask = keycode_to_button(keycode);
 	if (!mask)
 		return;
 
-	uint32_t old = pressed;
 	if (state)
+	{
+		uint32_t old = pressed;
 		pressed |= mask;
-	else
-		pressed &= ~mask;
-	
-	if (pressed && !old)
-		presstime = time;
 
-	if (state)
-	{
-		int decoded = decode_chord(pressed);
-		if (decoded)
-		{
-			if (previous)
-			{
-				fakekey_release(fakekey);
-				fakekey_press_keysym(fakekey, 127, 0);
-				fakekey_release(fakekey);
-			}
-			fakekey_press_keysym(fakekey, decoded, 0);
-			previous = true;
-		}
+		/* If the chord changed, send a timer event in 100ms. */
+
+		if (pressed != old)
+			settimer(100);
 	}
 	else
 	{
+		/* Stop the timer. */
+
+		settimer(0);
+
+		/* Make sure that any partially completed character is sent. */
+
+		send_chord_key();
+
+		/* Send a keyup. */
+
 		fakekey_release(fakekey);
-		previous = false;
+		pressed &= ~mask;
 	}
+
+	if (!pressed)
+		transmitpending = true;
 }
 
-int main(int argc, const char* argv[])
+static void process_xlib_events(void)
 {
-	display = XOpenDisplay(NULL);
-
-	int opcode;
-	int eventbase, errorbase;
-	if (!XQueryExtension(display, "XInputExtension",
-			&opcode, &eventbase, &errorbase))
-	{
-		printf("X Input extension not available.\n");
-		return EXIT_FAILURE;
-	}
-
-	window = XDefaultRootWindow(display);
-	fakekey = fakekey_init(display);
-
-	const struct device* device = find_connected_device(display, &deviceid);
-	assert(device);
-	load_device(device);
-
-	grab_xinput_device();
-
-	XSelectInput(display, window, GenericEvent);
-	for(;;)
+	while (XPending(display))
 	{
 		XEvent event;
 		XNextEvent(display, &event);
@@ -116,7 +126,7 @@ int main(int argc, const char* argv[])
 			case GenericEvent:
 			{
 				XGetEventData(display, &event.xcookie);
-				if (event.xcookie.extension == opcode)
+				if (event.xcookie.extension == xi_opcode)
 				{
 					switch (event.xcookie.evtype)
 					{
@@ -137,6 +147,79 @@ int main(int argc, const char* argv[])
 				break;
 		}
 	}
+}
+
+static void process_timer_events(void)
+{
+	/* The signal handler wrote a single byte to the pipe; read it. */
+
+	uint8_t c;
+	read(pipefds[0], &c, 1);
+
+	/* Decode the chord and send it. */
+
+	send_chord_key();
+}
+
+int main(int argc, const char* argv[])
+{
+	/* Set up X */
+
+	display = XOpenDisplay(NULL);
+
+	int eventbase, errorbase;
+	if (!XQueryExtension(display, "XInputExtension",
+			&xi_opcode, &eventbase, &errorbase))
+	{
+		printf("X Input extension not available.\n");
+		return EXIT_FAILURE;
+	}
+
+	window = XDefaultRootWindow(display);
+	fakekey = fakekey_init(display);
+
+	/* Find and set up the hardware device */
+
+	const struct device* device = find_connected_device(display, &deviceid);
+	assert(device);
+	load_device(device);
+
+	/* Set up our timed event pipe */
+
+	pipe(pipefds);
+	struct sigaction sa;
+	sa.sa_handler = sigalrm_handler_cb;
+	sa.sa_flags = 0;
+	sigfillset(&sa.sa_mask);
+	sigaction(SIGALRM, &sa, NULL);
+
+	/* Grab the device and enter the event loop. */
+
+	grab_xinput_device();
+
+	XSelectInput(display, window, GenericEvent);
+	for(;;)
+	{
+		struct pollfd fds[2] = {
+			{ 
+				.fd = ConnectionNumber(display),
+				.events = POLLIN,
+				.revents = 0
+			},
+			{
+				.fd = pipefds[0],
+				.events = POLLIN,
+				.revents = 0
+			}
+		};
+		poll(fds, sizeof(fds)/sizeof(*fds), -1);
+
+		if (fds[0].revents)
+			process_xlib_events();
+		if (fds[1].revents)
+			process_timer_events();
+	}
+
 	return 0;
 }
 
