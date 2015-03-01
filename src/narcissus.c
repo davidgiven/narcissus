@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <assert.h>
+#include <getopt.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/extensions/XInput2.h>
@@ -28,6 +29,8 @@ static FakeKey* fakekey;
 static int xi_opcode;
 static int pipefds[2];
 
+static int timeout = 200;
+static const char* devicename = NULL;
 static uint32_t pressed = 0;
 static bool transmitpending = true;
 
@@ -117,7 +120,7 @@ static void change_state(int keycode, Time time, bool state)
 		/* If the chord changed, send a timer event in 100ms. */
 
 		if (pressed != old)
-			settimer(100);
+			settimer(timeout);
 	}
 	else
 	{
@@ -195,8 +198,55 @@ static void emergency_key_release_cb(void)
 	fakekey_release(fakekey);
 }
 
-int main(int argc, const char* argv[])
+static void do_help(void)
 {
+	printf("narcissus [-d <device>] [-t <timeout>]\n");
+	exit(EXIT_SUCCESS);
+}
+
+static void parse_options(int argc, char* argv[])
+{
+	argv[0] = "narcissus";
+	opterr = 0;
+
+	for (;;)
+	{
+		switch (getopt(argc, argv, "-d:t:h"))
+		{
+			case 'd':
+				devicename = optarg;
+				break;
+
+			case 't':
+				timeout = atoi(optarg);
+				if (timeout <= 0)
+					error("invalid timeout (must be a positive number of milliseconds)");
+				break;
+
+			case 'h':
+				do_help();
+				assert(false);
+
+			case '?':
+				error("unknown option '%c' --- try -h", optopt);
+				assert(false);
+
+			case 1:
+				error("too many command line arguments --- try -h");
+				assert(false);
+
+			case -1:
+				return;
+		}
+	}
+}
+
+int main(int argc, char* argv[])
+{
+	/* Parse command line */
+
+	parse_options(argc, argv);
+
 	/* Set up X */
 
 	display = XOpenDisplay(NULL);
@@ -215,8 +265,13 @@ int main(int argc, const char* argv[])
 
 	/* Find and set up the hardware device */
 
-	const struct device* device = find_connected_device(display, &deviceid);
-	assert(device);
+	const struct device* device;
+	if (devicename)
+		device = find_device_by_name(devicename);
+	else
+		device = find_connected_device(display, &deviceid);
+	if (!device)
+		error("could not find device");
 	load_device(device);
 
 	/* Set up our timed event pipe */
