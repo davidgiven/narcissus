@@ -36,5 +36,10 @@ extern void load_device(const struct device* device);
 uint32_t keycode_to_button(int keysym);
 int decode_chord(uint32_t buttons);
 
+#define MODIFIER_MASK ((1<<24) - 1)
+#define CTRL          (1<<24)
+#define ALT           (1<<25)
+#define META          (1<<26)
+
 #endif
 

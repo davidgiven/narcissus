@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <X11/keysym.h>
 #include "devices.h"
 
 #define B0 (1<<0)
@@ -45,15 +46,11 @@
 	 | ((x&0x000f0LU) ? B9 : 0) \
 	 | ((x&0x0000fLU) ? B10 : 0))
 
-#define LETTER3(lo, caps, loshift, hishift) \
+#define LETTER(lo, caps) \
 	{ TOP5(HEX(lo)), caps | 32 }, \
 	{ BOT5(HEX(lo)), caps }, \
-	{ TOP5(HEX(lo)) | B0, loshift }, \
-	{ BOT5(HEX(lo)) | B0, hishift }
-
-#define LETTER1(lo, caps) \
-	{ TOP5(HEX(lo)), caps | 32 }, \
-	{ BOT5(HEX(lo)), caps }
+	{ TOP5(HEX(lo))|B0, caps | 32 | CTRL }, \
+	{ BOT5(HEX(lo))|B0, caps | 32 | ALT }
 
 const struct device razer_nostromo = {
 	/* sic --- this is how XInput2 reports it */
@@ -91,38 +88,114 @@ const struct device razer_nostromo = {
 	/* Supported chords; sorted by frequency, most common first (or else
 	 * the tutor gets confused). */
 	.chords = (struct chord[]) {
-		/* Sorted by frequency; most common first. */
-		LETTER3(00100, 'E', '3', '8'),
-		LETTER3(00010, 'T', '4', '9'),
-		LETTER3(00001, 'A', '5', '0'),
-		LETTER3(10000, 'O', '1', '6'),
-		LETTER3(01000, 'I', '2', '7'),
-		LETTER3(00110, 'N', '(', ')'),
-		LETTER3(00011, 'S', '.', ','),
-		LETTER3(01100, 'H', ';', ':'),
-		LETTER1(00101, 'R'),
-		LETTER1(10100, 'D'),
-		LETTER1(10010, 'L'),
-		LETTER1(01010, 'U'),
-		LETTER1(10001, 'C'),
-		LETTER1(01001, 'M'),
-		LETTER1(00111, 'F'),
-		LETTER1(11000, 'G'),
-		LETTER1(10110, 'Y'),
-		LETTER1(01110, 'P'),
-		LETTER1(01101, 'W'),
-		LETTER1(01011, 'B'),
-		LETTER1(11100, 'V'),
-		LETTER1(11010, 'K'),
-		LETTER1(01111, 'X'),
-		LETTER1(11110, 'J'),
-		LETTER1(10101, 'Q'),
-		LETTER1(10011, 'Z'),
+		/* Letters, sorted by frequency; most common first. */
 
-		{ B12,    13 },
-		{ B13,    ' ' },
-		{ B13|B0, '\t' },
-		{ B14,    127 },
+		LETTER(00100, 'E'),
+		LETTER(00010, 'T'),
+		LETTER(00001, 'A'),
+		LETTER(10000, 'O'),
+		LETTER(01000, 'I'),
+		LETTER(00110, 'N'),
+		LETTER(00011, 'S'),
+		LETTER(01100, 'H'),
+		LETTER(00101, 'R'),
+		LETTER(10100, 'D'),
+		LETTER(10010, 'L'),
+		LETTER(01010, 'U'),
+		LETTER(10001, 'C'),
+		LETTER(01001, 'M'),
+		LETTER(00111, 'F'),
+		LETTER(11000, 'G'),
+		LETTER(10110, 'Y'),
+		LETTER(01110, 'P'),
+		LETTER(01101, 'W'),
+		LETTER(01011, 'B'),
+		LETTER(11100, 'V'),
+		LETTER(11010, 'K'),
+		LETTER(01111, 'X'),
+		LETTER(11110, 'J'),
+		LETTER(10101, 'Q'),
+		LETTER(10011, 'Z'),
+
+		/* Numbers. */
+
+		{ B11|B1,    '1' },
+		{ B11|B2,    '2' },
+		{ B11|B3,    '3' },
+		{ B11|B4,    '4' },
+		{ B11|B5,    '5' },
+		{ B11|B6,    '6' },
+		{ B11|B7,    '7' },
+		{ B11|B8,    '8' },
+		{ B11|B9,    '9' },
+		{ B11|B10,   '0' },
+
+		{ B14,       XK_Escape },
+		{ B11|B14,   '.' },
+
+		/* Adjacent diagonals. */
+
+		{ B8|B4,     XK_Return },
+		{ B4|B10,    XK_BackSpace},
+		{ B5|B9,     ' ' },
+
+		/* Vertical pairs. */
+
+		{ B1|B6,     '"' },
+		{ B2|B7,     ';' },
+		{ B3|B8,     ',' },
+		{ B4|B9,     '=' },
+		{ B5|B10,    '_' },
+
+		/* Paired symbols, using the left column as a modifier. */
+
+		{ B1|B10,    '(' },
+		{ B6|B5,     ')' },
+		{ B1|B9,     '{' },
+		{ B6|B4,     '}' },
+		{ B1|B8,     '[' },
+		{ B6|B3,     ']' },
+		{ B1|B7,     '<' },
+		{ B6|B2,     '>' },
+
+		/* Column 2. */
+
+		{ B2|B9,     '+' },
+		{ B2|B10,    '-' },
+		{ B7|B4,     '*' },
+		{ B7|B5,     '/' },
+		{ B2|B8|B9,  '%' },
+		{ B7|B3|B4,  '?' },
+
+		/* Column 3. */
+
+		{ B3|B6,     '|' },
+		{ B3|B10,    ':' },
+		{ B8|B1,     '~' },
+		{ B8|B5,     '&' },
+		{ B3|B6|B10, '\\' },
+		{ B8|B1|B5,  '`' },
+
+		/* Column 4. */
+
+		{ B4|B6,     '#' },
+		{ B4|B7,     '^' },
+		{ B9|B1,     '!' },
+		{ B10|B2,    '$' },
+		{ B4|B7|B8,  '@' },
+		{ B9|B2|B3,  XK_sterling },
+
+		/* Cursor keys! */
+
+		{ B16,     XK_Up },
+		{ B17,     XK_Right },
+		{ B18,     XK_Down },
+		{ B19,     XK_Left },
+
+		{ B16|B11, XK_Page_Up },
+		{ B17|B11, XK_End },
+		{ B18|B11, XK_Page_Down },
+		{ B19|B11, XK_Home },
 
 		{ 0, 0 }
 	}

@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdarg.h>
 #include <string.h>
 #include <poll.h>
 #include <signal.h>
@@ -29,6 +30,19 @@ static int pipefds[2];
 
 static uint32_t pressed = 0;
 static bool transmitpending = true;
+
+static void error(const char* format, ...)
+{
+	va_list ap;
+	va_start(ap, format);
+
+	fprintf(stderr, "narcissus: ");
+	vfprintf(stderr, format, ap);
+	fprintf(stderr, "\n");
+
+	va_end(ap);
+	exit(EXIT_FAILURE);
+}
 
 static void sigalrm_handler_cb(int signum)
 {
@@ -61,7 +75,8 @@ static void grab_xinput_device(void)
 	Status s = XIGrabDevice(display, deviceid, window,
 			CurrentTime, None, XIGrabModeAsync, XIGrabModeAsync,
 			False, &eventmask);
-	assert(s == 0);
+	if (s)
+		error("unable to grab device (narcissus may already be running)");
 
 	s = XISelectEvents(display, window, &eventmask, 1);
 	assert(s == 0);
@@ -73,8 +88,18 @@ static void send_chord_key(void)
 	{
 		int decoded = decode_chord(pressed);
 		if (decoded)
-			fakekey_press_keysym(fakekey, decoded, 0);
-		transmitpending = false;
+		{
+			int modifiers = 0;
+			if (decoded & CTRL)
+				modifiers |= FAKEKEYMOD_CONTROL;
+			if (decoded & ALT)
+				modifiers |= FAKEKEYMOD_ALT;
+			if (decoded & META)
+				modifiers |= FAKEKEYMOD_META;
+
+			fakekey_press_keysym(fakekey, decoded & MODIFIER_MASK, modifiers);
+			transmitpending = false;
+		}
 	}
 }
 
@@ -110,7 +135,11 @@ static void change_state(int keycode, Time time, bool state)
 		pressed &= ~mask;
 	}
 
-	if (!pressed)
+	/* If the current pressed chord no longer maps to a valid key, assume
+	 * the current keypress has finished. We allow the user to hold down
+	 * chords which don't map to keys to make modifiers work properly. */
+
+	if (!pressed || !decode_chord(pressed))
 		transmitpending = true;
 }
 
@@ -161,6 +190,11 @@ static void process_timer_events(void)
 	send_chord_key();
 }
 
+static void emergency_key_release_cb(void)
+{
+	fakekey_release(fakekey);
+}
+
 int main(int argc, const char* argv[])
 {
 	/* Set up X */
@@ -177,6 +211,7 @@ int main(int argc, const char* argv[])
 
 	window = XDefaultRootWindow(display);
 	fakekey = fakekey_init(display);
+	atexit(emergency_key_release_cb);
 
 	/* Find and set up the hardware device */
 
