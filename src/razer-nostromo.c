@@ -150,39 +150,42 @@ const struct device razer_nostromo = {
 		/* Paired symbols, using the left column as a modifier. */
 
 		{ B1|B10,    '(' },
-		{ B6|B5,     ')' },
 		{ B1|B9,     '{' },
-		{ B6|B4,     '}' },
 		{ B1|B8,     '[' },
-		{ B6|B3,     ']' },
 		{ B1|B7,     '<' },
+		{ B6|B5,     ')' },
+		{ B6|B4,     '}' },
+		{ B6|B3,     ']' },
 		{ B6|B2,     '>' },
+
+		/* Operators, using the right column as a modifier. */
+
+		{ B5|B7,     '+' },
+		{ B5|B8,     '-' },
+		{ B10|B2,    '*' },
+		{ B10|B3,    '/' },
+		{ B5|B6|B7,  '%' },
+		{ B10|B1|B2, '^' },
 
 		/* Column 2. */
 
-		{ B2|B9,     '+' },
-		{ B2|B10,    '-' },
-		{ B7|B4,     '*' },
-		{ B7|B5,     '/' },
-		{ B2|B8|B9,  '%' },
-		{ B7|B3|B4,  '?' },
+		{ B2|B8|B9,  '?' },
+		{ B2|B9|B10, '&' },
+		{ B7|B3|B4,  '!' },
+		{ B7|B4|B5,  '|' },
 
 		/* Column 3. */
 
-		{ B3|B6,     '|' },
-		{ B3|B10,    ':' },
-		{ B8|B1,     '~' },
-		{ B8|B5,     '&' },
-		{ B3|B6|B10, '\\' },
-		{ B8|B1|B5,  '`' },
+		{ B3|B7|B9,  ':' },
+		{ B8|B2|B4,  '$' },
+		{ B3|B7|B10, '\\' },
+		{ B3|B6|B9,  '`' },
 
 		/* Column 4. */
 
-		{ B4|B6,     '#' },
-		{ B4|B7,     '^' },
-		{ B9|B1,     '!' },
-		{ B10|B2,    '$' },
+		{ B4|B6|B7,  '#' },
 		{ B4|B7|B8,  '@' },
+		{ B9|B1|B2,  '~' },
 		{ B9|B2|B3,  XK_sterling },
 
 		/* Cursor keys! */
