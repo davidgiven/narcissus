@@ -78,6 +78,13 @@ const struct device* find_device_by_name(const char* name)
 	return NULL;
 }
 
+static void print_chord(uint32_t chord)
+{
+	for (int i=0; i<32; i++)
+		if (chord & (1<<i))
+			printf("%d ", i);
+}
+
 void load_device(const struct device* device)
 {
 	const struct button* b = device->buttons;
@@ -105,6 +112,22 @@ void load_device(const struct device* device)
 	chords = calloc(numchords, sizeof(struct chord));
 	memcpy(chords, device->chords, numchords * sizeof(struct chord));
 	qsort(chords, numchords, sizeof(struct chord), chord_comparator_cb);
+
+	/* Check the chordmap for collisions. */
+
+	for (int i=0; i<(numchords-1); i++)
+	{
+		struct chord* left = &chords[i];
+		struct chord* right = &chords[i+1];
+		if (left->buttons == right->buttons)
+		{
+			printf("warning: chord ");
+			print_chord(left->buttons);
+			printf("collides: keysyms '%s' and '%s'\n",
+				XKeysymToString(left->keysym),
+				XKeysymToString(right->keysym));
+		}
+	}
 }
 
 uint32_t keycode_to_button(int keysym)
