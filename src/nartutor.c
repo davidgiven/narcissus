@@ -164,7 +164,7 @@ static void calculate_levels(void)
 	const struct chord* chord = device->chords;
 	while (chord->buttons)
 	{
-		if (islower(chord->keysym))
+		if (isascii(chord->keysym) && islower(chord->keysym))
 		{
 			levels[level] = chord->keysym;
 			level++;
@@ -176,7 +176,7 @@ static void calculate_levels(void)
 	printf("(learning order: %26s)\n", levels);
 }
 
-static bool isvalid(char c)
+static bool isvalid(int c)
 {
 	for (int i=0; i<level; i++)
 		if (c == levels[i])
