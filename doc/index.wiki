@@ -1,0 +1,127 @@
+<title>About</title>
+
+
+<h3>What is it?</h3>
+
+Narcissus is a very simple program that allows the use of gamepads (or other
+XInput2 keyboard devices) as chording keyboards under X11.
+
+What's a chording keyboard? It's a keyboard where you press combinations of
+keys in order to produce letters. Because you don't need one key per letter,
+you get very much fewer keys, and so can easily type one handed. Theoretically
+they can also be faster than a conventional keyboard but I have my doubts. 
+But because they're one handed, you can type while using your other hand for
+something else --- beer, say, or using the mouse.
+
+Narcissus was written to work with the Razer Nostromo (hence the name). That's
+one of these:
+
+<p><img style="width:50%" alt="[Picture of the Razer Nostromo]"
+src="http://assets.razerzone.com/eeimages/products/59/razer-nostromo-gallery-1.png"/></p>
+
+It'll work with other keypads, including the left-handed version of the
+Nostromo, and <i>also</i> including conventional keyboards provided they
+support n-key rollover, but I don't have keymaps for them. Implementing your
+own keymap for Narcissus should be trivial. If you've got a device you want to
+make work, please get in touch --- I'd love to support more devices.
+
+
+
+<h3>What's new?</h3>
+
+Nothing yet --- I haven't made a proper release!
+
+
+
+<h3>How do I use it?</h3>
+
+Download and build it. Right now you have to check out the repository. Build
+instructions are in the <a href="../README">README</a>. Once built, run it
+with:
+
+<verbatim>./narcissus</verbatim>
+
+...and it should autodetect your device and Just Work.
+
+Once it's running, typing on the keypad should make letters appear on your
+desktop. Narcissus runs in parallel with your existing keyboard, so you can
+always go back to that if you want to.
+
+The keymap is very much in flux, so rather than provide documentation here
+where it'll instantly become wrong, I'll just <a
+href="../src/razer-nostromo.c">link to the relevant source file</a>. Hopefully
+it'll be readable. However, in general:
+
+  *  Combinations on the <b>top</b> row produce <b>lower case letters</b>
+  *  The same combinations on the <b>middle</b> row produce <b>upper case
+     letters</b>
+  *  <b>Button 11</b> is a modifier which causes the top two rows to
+     produce the obvious <b>numbers</b>
+  *  The thumb button is a modifier which acts as <b>control</b> on the
+     <b>top row</b> and <b>alt</b> on the <b>middle row</b> (sorry, no
+	 meta or more complex combinations yet)
+  *  <b>Symbols</b>, <b>space</b>, <b>delete</b> and <b>return</b> are
+     produced by combinations spanning the <b>top two rows</b>.
+
+To quit, Ctrl+C it. <b>Don't do this using Narcissus itself</b> or else it'll
+die before it has a chance to release the keys and your desktop will think
+you're holding Ctrl+C down.
+
+To <i>learn</i> the keymap, a simple tutorial program, nartutor, is included.
+See the <a href="../README">README</a> for details.
+
+
+
+<h3>Why should I use it?</h3>
+
+Chording keyboards are awesome. Hard to use, but awesome. Being able to enter
+text using just one hand means that you can do something with the other hand.
+Douglas Engelbart, who pretty much invented the mouse, intended to use a
+chording keyboard in the other hand. <a
+href="https://www.youtube.com/watch?v=yJDv-zdhzMY>"See his seminal 1968
+demo</a>.
+
+Court stenographers use <a
+href="http://www.acrdepos.com/wordpress/how-does-a-stenograph-work/">two-hand
+chording keyboards</a> to allow them to write at 225 words per minute and keep
+up with debate in courtrooms. The record is 375, I believe.
+
+They're also invaluable for people who have, say, one hand. I'm particularly
+interested because, while I do have two hands, pretty much everything I do
+revolves around keyboards, and I live in dread of RSI. Being able to type one
+handed would allow me to use one hand at a time in a totally different style.
+
+There have been <a href="http://twiddler.tekgear.com/">lots of</a>
+<a href="http://en.wikipedia.org/wiki/FrogPad">chording</a> <a
+href="http://en.wikipedia.org/wiki/Microwriter">keyboards</a> <a
+href="http://chordite.com/">made over the years</a>, but they're all esoteric,
+exotic, expensive and usually very hard to find. But gamepads are booming, and
+they're typically ergonomic and easy to find.
+
+I have found a few other pieces of software that do what Narcissus does, but
+I've never made them work; Narcissus is small, simple and tailored for what I
+want. Hopefully it'll be useful for other people too.
+
+
+
+<h3>Why shouldn't I use it?</h3>
+
+Learning the keymap is a major undertaking, and will take lots of practice. Me, I
+suck. I can type E, T, A, O, I, N, S, H and sometimes R.
+
+
+
+<h3>Who wrote it?</h3>
+
+Me, <a href="mailto:dg@cowlark.com">David Given</a>. Comments, criticism, cake?
+Email me. Or file bugs. Either will do. You may also like to
+<a href="http://cowlark.com">look at my website</a>. There may or may not be
+anything interesting there.
+
+
+
+<h3>What's the license?</h3>
+
+Narcissus is distributable under the terms of the <a
+href="copying.wiki">Simplified BSD License</a>.
+

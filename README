@@ -5,6 +5,7 @@
                                 2015-02-23
                                (prerelease)
 
+
 INTRODUCTION
 ============
 
@@ -18,6 +19,7 @@ http://www.razerzone.com/gaming-keyboards-keypads/razer-nostromo
 
 The keymap is moderately complicated by Narcissus also includes --- totally
 free! --- a simple tutorial tool which will teach you how to use it.
+
 
 
 INSTALLATION
@@ -37,6 +39,7 @@ To build, just do:
 
 It'll leave the narcissus and nartutor binaries in the current directory; do
 with them what you will.
+
 
 
 USAGE
@@ -63,12 +66,27 @@ then prompt you with words to type in. When it runs out of words, it'll
 advance to the next level. If you get bored, ^C it and increase the level
 manually.
 
+The keymap is not documented because it's still in flux and the documentation
+would be instantly wrong --- see src/razer-nostromo.c instead. However, as
+a general rule:
+
+  *  Combinations on the top row produce lower case letters
+  *  The same combinations on the middle row produce upper case letters
+  *  Button 11 is a modifier which causes the top two rows to produce the
+     obvious numbers
+  *  The thumb button is a modifier which acts as control on the top row and
+     alt on the middle row (sorry, no meta or more complex combinations yet)
+  *  Symbols, space, delete and return are produced by combinations spanning
+     the top two rows.
+
+
 
 ISSUES
 ======
 
 It's not very configurable (read: not configurable), the keymap is subject to
 change without notice, and nartutor only knows about alphabetic keys.
+
 
 
 LICENSE
@@ -78,10 +96,12 @@ Narcissus is available under the two-clause BSD license. Please see the
 COPYING file for the full text.
 
 
+
 REVISION HISTORY
 ================
 
 Unreleased.
+
 
 
 THE AUTHOR
