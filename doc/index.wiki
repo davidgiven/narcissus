@@ -78,7 +78,7 @@ Chording keyboards are awesome. Hard to use, but awesome. Being able to enter
 text using just one hand means that you can do something with the other hand.
 Douglas Engelbart, who pretty much invented the mouse, intended to use a
 chording keyboard in the other hand. <a
-href="https://www.youtube.com/watch?v=yJDv-zdhzMY>"See his seminal 1968
+href="https://www.youtube.com/watch?v=yJDv-zdhzMY">See his seminal 1968
 demo</a>.
 
 Court stenographers use <a
