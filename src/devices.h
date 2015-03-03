@@ -39,6 +39,7 @@ int decode_chord(uint32_t buttons);
 #define MODIFIER_MASK ((1<<24) - 1)
 #define CTRL          (1<<24)
 #define ALT           (1<<25)
+/* Note: META doesn't work with libfakekey 0.1-8.1 */
 #define META          (1<<26)
 
 #endif
