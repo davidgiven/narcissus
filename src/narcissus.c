@@ -227,7 +227,7 @@ static void do_help(void)
 {
 	printf(
 		"narcissus [<option>...]\n"
-		"© 2015 David Given; http://cowlark.com/narcissus\n"
+		"Version " VERSION " © 2015 David Given; http://cowlark.com/narcissus\n"
 		"\n"
 		"Options:\n"
 		"  -h    Show this message\n"

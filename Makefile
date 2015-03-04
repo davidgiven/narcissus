@@ -1,11 +1,14 @@
 hide = @
 
+VERSION = 0.1
+
 CFLAGS = \
 	-g \
 	-Os \
 	-std=c99 \
 	-D_BSD_SOURCE \
-	-D_POSIX_SOURCE
+	-D_POSIX_SOURCE \
+	-DVERSION=\"$(VERSION)\"
 
 LIBS = \
 	-lfakekey \
