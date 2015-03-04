@@ -59,7 +59,7 @@ static void error(const char* format, ...)
 	exit(EXIT_FAILURE);
 }
 
-static void logf(const char* format, ...)
+static void message(const char* format, ...)
 {
 	if (logging)
 	{
@@ -126,7 +126,7 @@ static void send_chord_key(void)
 			if (decoded & META)
 				modifiers |= FAKEKEYMOD_META;
 
-			logf("pressing %08x", decoded);
+			message("pressing %08x", decoded);
 			fakekey_press_keysym(fakekey, decoded & MODIFIER_MASK, modifiers);
 			fired = true;
 		}
@@ -164,11 +164,11 @@ static void change_state(int keycode, Time time, bool state)
 
 		/* Send a keyup. */
 
-		logf("releasing");
+		message("releasing");
 		fakekey_release(fakekey);
 		pressed &= ~mask;
 	}
-	logf("mask=%08x state=%d pressed=%08x", mask, state, pressed);
+	message("mask=%08x state=%d pressed=%08x", mask, state, pressed);
 }
 
 static void process_xlib_events(void)
