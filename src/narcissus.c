@@ -32,7 +32,19 @@ static int pipefds[2];
 static int timeout = 200;
 static const char* devicename = NULL;
 static uint32_t pressed = 0;
-static bool transmitpending = true;
+static bool logging = false;
+
+/* The state machine works as follows:
+ *
+ * - when the user PRESSES a button which forms a valid chord,
+ *   we start a timer. When the timer expires OR when a
+ *   key is released we press the key.
+ *
+ * - when the user RELEASES any button and a key is pressed,
+ *   we release it.
+ */
+
+static bool fired = false;
 
 static void error(const char* format, ...)
 {
@@ -45,6 +57,20 @@ static void error(const char* format, ...)
 
 	va_end(ap);
 	exit(EXIT_FAILURE);
+}
+
+static void logf(const char* format, ...)
+{
+	if (logging)
+	{
+		va_list ap;
+		va_start(ap, format);
+
+		vfprintf(stdout, format, ap);
+		printf("\n");
+
+		va_end(ap);
+	}
 }
 
 static void sigalrm_handler_cb(int signum)
@@ -87,7 +113,7 @@ static void grab_xinput_device(void)
 
 static void send_chord_key(void)
 {
-	if (transmitpending && pressed)
+	if (!fired && pressed)
 	{
 		int decoded = decode_chord(pressed);
 		if (decoded)
@@ -100,8 +126,9 @@ static void send_chord_key(void)
 			if (decoded & META)
 				modifiers |= FAKEKEYMOD_META;
 
+			logf("pressing %08x", decoded);
 			fakekey_press_keysym(fakekey, decoded & MODIFIER_MASK, modifiers);
-			transmitpending = false;
+			fired = true;
 		}
 	}
 }
@@ -120,7 +147,10 @@ static void change_state(int keycode, Time time, bool state)
 		/* If the chord changed, send a timer event in 100ms. */
 
 		if (pressed != old)
+		{
+			fired = false;
 			settimer(timeout);
+		}
 	}
 	else
 	{
@@ -134,16 +164,11 @@ static void change_state(int keycode, Time time, bool state)
 
 		/* Send a keyup. */
 
+		logf("releasing");
 		fakekey_release(fakekey);
 		pressed &= ~mask;
 	}
-
-	/* If the current pressed chord no longer maps to a valid key, assume
-	 * the current keypress has finished. We allow the user to hold down
-	 * chords which don't map to keys to make modifiers work properly. */
-
-	if (!pressed || !decode_chord(pressed))
-		transmitpending = true;
+	logf("mask=%08x state=%d pressed=%08x", mask, state, pressed);
 }
 
 static void process_xlib_events(void)
@@ -200,7 +225,16 @@ static void emergency_key_release_cb(void)
 
 static void do_help(void)
 {
-	printf("narcissus [-d <device>] [-t <timeout>]\n");
+	printf(
+		"narcissus [<option>...]\n"
+		"© 2015 David Given; http://cowlark.com/narcissus\n"
+		"\n"
+		"Options:\n"
+		"  -h    Show this message\n"
+		"  -d X  Look for XInput2 device X; default: automatic\n"
+		"  -t N  Set timeout to N milliseconds; default: %dms\n"
+		"  -v    Enable copious logging\n",
+		timeout);
 	exit(EXIT_SUCCESS);
 }
 
@@ -211,7 +245,7 @@ static void parse_options(int argc, char* argv[])
 
 	for (;;)
 	{
-		switch (getopt(argc, argv, "-d:t:h"))
+		switch (getopt(argc, argv, "-d:t:hv"))
 		{
 			case 'd':
 				devicename = optarg;
@@ -221,6 +255,10 @@ static void parse_options(int argc, char* argv[])
 				timeout = atoi(optarg);
 				if (timeout <= 0)
 					error("invalid timeout (must be a positive number of milliseconds)");
+				break;
+
+			case 'v':
+				logging = true;
 				break;
 
 			case 'h':

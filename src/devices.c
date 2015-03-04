@@ -61,6 +61,7 @@ const struct device* find_connected_device(Display* display, int* deviceid)
 			const struct device* device = find_device_by_name(info->name);
 			if (device)
 			{
+				printf("Found %s\n", info->name);
 				if (deviceid)
 					*deviceid = info->deviceid;
 				return device;
