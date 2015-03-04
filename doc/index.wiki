@@ -36,8 +36,8 @@ Nothing yet --- I haven't made a proper release!
 <h3>How do I use it?</h3>
 
 Download and build it. Right now you have to check out the repository. Build
-instructions are in the <a href="../README">README</a>. Once built, run it
-with:
+instructions are in the <a href="../README?mimetype=text/plain">README</a>.
+Once built, run it with:
 
 <verbatim>./narcissus</verbatim>
 
@@ -68,7 +68,7 @@ die before it has a chance to release the keys and your desktop will think
 you're holding Ctrl+C down.
 
 To <i>learn</i> the keymap, a simple tutorial program, nartutor, is included.
-See the <a href="../README">README</a> for details.
+See the <a href="../README?mimetype=text/plain">README</a> for details.
 
 
 
