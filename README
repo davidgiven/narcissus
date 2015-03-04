@@ -1,9 +1,8 @@
-                              NARCISSUS v0.0
+                              NARCISSUS v0.1
 							  ==============
 
                             © 2015 David Given
                                 2015-02-23
-                               (prerelease)
 
 
 INTRODUCTION
@@ -38,7 +37,7 @@ To build, just do:
   $ make
 
 It'll leave the narcissus and nartutor binaries in the current directory; do
-with them what you will.
+with them what you will. There are no data files to install.
 
 
 
@@ -50,6 +49,7 @@ To use:
   $ narcissus &
 
 It will automatically detect a connected device and start interpreting keys.
+There are some options; try -h to see them.
 
 To use the tutor:
 
@@ -100,7 +100,7 @@ COPYING file for the full text.
 REVISION HISTORY
 ================
 
-Unreleased.
+Version 0.1, 2015-03-04: First release!
 
 
 

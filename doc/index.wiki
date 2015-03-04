@@ -29,15 +29,18 @@ make work, please get in touch --- I'd love to support more devices.
 
 <h3>What's new?</h3>
 
-Nothing yet --- I haven't made a proper release!
+<b>Version 0.1</b>, 2015-03-04: The first release!
 
 
 
 <h3>How do I use it?</h3>
 
-Download and build it. Right now you have to check out the repository. Build
-instructions are in the <a href="../README?mimetype=text/plain">README</a>.
-Once built, run it with:
+<a href="../../../tarball/narcissus-0.1.tar.gz?uuid=release-0.1">Download it
+from here.</a>
+
+Then build it; it should just be matter of running <code>make</code> on most
+modern systems, but full instructions are in the <a
+href="../README?mimetype=text/plain">README</a>.  Once built, run it with:
 
 <verbatim>./narcissus</verbatim>
 
